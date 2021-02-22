@@ -1,4 +1,4 @@
-# kidney_tissue_segmentation
+# Kidney Tissue Segmentation
 
 Requirements : 
 ```
