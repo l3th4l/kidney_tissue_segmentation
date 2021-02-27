@@ -15,3 +15,6 @@ venv.bak/
 #dataset
 hubmap-kidney-segmentation/
 processed_dat/
+
+#images
+*.png

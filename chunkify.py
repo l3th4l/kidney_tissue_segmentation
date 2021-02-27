@@ -26,8 +26,13 @@ for im_name in img_list:
 
     #Save image chunks
     
-    x = tiff.imread(ds_path + im_name)
-    
+    x = io.imread(ds_path + im_name)
+
+    if(len(np.shape(x)) > 3):
+        x = np.reshape(x, np.shape(x)[-3:])
+
+    print(np.shape(x))
+
     width = np.shape(x)[1]
     height = np.shape(x)[0]
     
