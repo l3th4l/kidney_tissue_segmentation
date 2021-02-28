@@ -33,17 +33,41 @@ class MAE(Model):
 
         #Mask Estimator
         #16     -> 64
-        self.m1 = Conv2DTranspose(filters[3], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.m1 = Conv2DTranspose(filters[3], kernel_size = [3, 3], padding = 'same', strides = [4, 4])
         #64     -> 256
-        self.m2 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.m2 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [4, 4])
         #256    -> 512
-        self.m3 = Conv2DTranspose(3, kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.m3 = Conv2DTranspose(3, kernel_size = [3, 3], padding = 'same', strides = [4, 4])
 
-    def encode():
+    def encode(self, inputs):
+
         #encode 
+        x = self.e1(inputs)
+        x = self.e2(x)
+        x = self.e3(x)
+        x = self.e4(x)
+        return self.e5(x)
     
-    def decode():
-        #decode 
+    def decode(self, inputs):
+
+        #decode
+        x = self.d1(inputs)
+        x = self.d2(x)
+        x = self.d3(x)
+        x = self.d4(x)
+        return self.d5(x)
     
-    def pred_mask():
+    def pred_mask(self, inputs):
+
         #predict mask
+        x = self.m1(inputs)
+        x = self.m2(x)
+        return self.m3(x)
+
+    def call(self, inputs, mask = True)
+
+        x = self.encode(inputs)
+        
+        if mask:
+            return self.pred_mask(x)            
+        return self.decode(x) 
