@@ -1,5 +1,7 @@
 import tensorflow as tf 
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose
+from tensorflow.keras.activations import sigmoid
+from tensorflow.keras.losses import binary_crossentropy
 from tensorflow.keras import Model 
 
 class MAE(Model):
@@ -37,7 +39,9 @@ class MAE(Model):
         #64     -> 256
         self.m2 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [4, 4])
         #256    -> 512
-        self.m3 = Conv2DTranspose(3, kernel_size = [3, 3], padding = 'same', strides = [4, 4])
+        self.m3 = Conv2DTranspose(1, kernel_size = [3, 3], padding = 'same', strides = [4, 4])
+        #sigmoid
+        self.mo = sigmoid()
 
     def encode(self, inputs):
 
@@ -57,12 +61,15 @@ class MAE(Model):
         x = self.d4(x)
         return self.d5(x)
     
-    def pred_mask(self, inputs):
+    def pred_mask(self, inputs, training = False):
 
         #predict mask
         x = self.m1(inputs)
         x = self.m2(x)
-        return self.m3(x)
+        x = self.m3(x)
+        if training:
+            return x, self.mo(x)
+        return self.mo(x)
 
     def call(self, inputs, mask = True)
 
@@ -71,3 +78,11 @@ class MAE(Model):
         if mask:
             return self.pred_mask(x)            
         return self.decode(x) 
+
+def ae_loss(x, x_pred, mask):
+
+    return tf.math.reduce_mean(tf.math.square(tf.math.multiply((x - x_pred), mask)))
+
+def mask_loss(mask, mask_pred_logits):
+
+    return tf.math.reduce_mean(binary_crossentropy(mask, mask_pred_logits))
