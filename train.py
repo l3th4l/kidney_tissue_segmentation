@@ -4,7 +4,10 @@ from tensorflow.keras.optimizers import Adam, RMSprop, Adagrad, Adadelta
 from model import MAE, ae_loss, mask_loss
 from dat_gen import gen_dat
 
+import numpy as np
+
 import argparse
+import pickle
 import os 
 
 parser = argparse.ArgumentParser()
@@ -12,34 +15,34 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-opt", "--optimizer", help = "optimizer", type = str)
 parser.add_argument("-lr", "--l_rate", help = "learning rate", type = float)
 parser.add_argument("-ep", "--epochs", help = "number of epochs", type = int)
-parser.add_argument("-dp", "--dat_path", help = "optimizer", type = str)
+parser.add_argument("-dp", "--data_path", help = "optimizer", type = str)
 
 
 args = parser.parse_args()
 
 l_rate = 0.02
 epochs = 100
-dat_path = "./processed_dat/"
+data_path = "./processed_dat/"
 
 if args.l_rate:
 
     l_rate = args.l_rate
 
-    print("setting learning rate to : " + args.l_rate)
+    print("setting learning rate to : %f"%(args.l_rate))
 
 
 if args.epochs:
 
     epochs = args.epochs
 
-    print("epochs epochs set to : " + args.epochs)
+    print("epochs epochs set to : %i"%(args.epochs))
 
 
-if args.dat_path:
+if args.data_path:
 
-    dat_path = args.dat_path
+    data_path = args.data_path
 
-    print("dataset path set to : " + args.dat_path)
+    print("dataset path set to : " + args.data_path)
 
 opt = None
 
@@ -56,32 +59,33 @@ if args.optimizer:
     else:
         opt = Adam(l_rate)
 
-    print("Using " + args.optimizer + " with learning rate : " + l_rate)
+    print("Using " + args.optimizer + " with learning rate : %f"%(l_rate))
 
 else:
 
     opt = Adam(l_rate)
 
-    print("Using adam with learning rate : " + l_rate)
+    print("Using adam with learning rate : %f"%(l_rate))
 
-files = os.list(dat_path)
+files = os.listdir(data_path)
 f_pairs = list(zip(files[::2], files[1::2]))
 
-def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs):
+def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _data_path = data_path):
     for i in range(_epochs):
         for im_f, m_f in _f_pairs:
-            #needs change
-            if os.path.getsize(data_path + f_pairs[n][0]) > 0:     
-                with open(data_path + f_pairs[n][0], 'rb') as im_f:
+
+            if os.path.getsize(_data_path + im_f) > 0:     
+                with open(_data_path + im_f, 'rb') as im_f:
                     unpickler = pickle.Unpickler(im_f)
                     im = unpickler.load()
-            #needs change
-            if os.path.getsize(data_path + f_pairs[n][1]) > 0:     
-                with open(data_path + f_pairs[n][1], 'rb') as m_f:
+
+            if os.path.getsize(_data_path + m_f) > 0:     
+                with open(_data_path + m_f, 'rb') as m_f:
                     unpickler = pickle.Unpickler(m_f)
-                    m = unpickler.load()    
+                    m = np.expand_dims(unpickler.load(), axis = -1)
 
             im_dat = gen_dat(im)
+            print("nigger")
             m_dat = gen_dat(m)
 
             del im
@@ -92,4 +96,6 @@ def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs):
                 plt.show()
                 plt.imshow(f)
                 plt.show()
+
+train()
         

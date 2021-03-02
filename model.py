@@ -71,7 +71,7 @@ class MAE(Model):
             return x, self.mo(x)
         return self.mo(x)
 
-    def call(self, inputs, mask = True)
+    def call(self, inputs, mask = True):
 
         x = self.encode(inputs)
         
