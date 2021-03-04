@@ -84,9 +84,9 @@ def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _da
                     unpickler = pickle.Unpickler(m_f)
                     m = np.expand_dims(unpickler.load(), axis = -1)
 
-            im_dat = gen_dat(im)
-            print("nigger")
-            m_dat = gen_dat(m)
+            im_dat = gen_dat(im, overlaps = 1)
+            print(im_dat.shape)
+            m_dat = gen_dat(m, overlaps = 1)
 
             del im
             del m 
