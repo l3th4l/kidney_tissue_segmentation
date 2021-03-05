@@ -5,6 +5,8 @@ from model import MAE, ae_loss, mask_loss
 from dat_gen import gen_dat
 
 import numpy as np
+from progress.bar import Bar
+from matplotlib import pyplot as plt 
 
 import argparse
 import pickle
@@ -22,6 +24,7 @@ args = parser.parse_args()
 
 l_rate = 0.02
 epochs = 100
+batch_size = 100
 data_path = "./processed_dat/"
 
 if args.l_rate:
@@ -70,8 +73,21 @@ else:
 files = os.listdir(data_path)
 f_pairs = list(zip(files[::2], files[1::2]))
 
+model = MAE()
+
+t_vars = model.trainable_variables
+e_vars = [var for var in t_vars if 'e' in var.name]
+d_vars = [var for var in t_vars if 'd' in var.name]
+m_vars = [var for var in t_vars if 'm' in var.name]
+
 def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _data_path = data_path):
+
+    losses = []
+
     for i in range(_epochs):
+
+        bar = Bar('Epoch %i'%(i), max = len(_f_pairs))
+
         for im_f, m_f in _f_pairs:
 
             if os.path.getsize(_data_path + im_f) > 0:     
@@ -84,18 +100,41 @@ def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _da
                     unpickler = pickle.Unpickler(m_f)
                     m = np.expand_dims(unpickler.load(), axis = -1)
 
-            im_dat = gen_dat(im, overlaps = 1)
+            im_dat, offsets = gen_dat(im, batch_size = batch_size)
+
             print(im_dat.shape)
-            m_dat = gen_dat(m, overlaps = 1)
+
+            m_dat, offsets = gen_dat(m, batch_size = batch_size, offsets = offsets)
 
             del im
             del m 
-            #debug
-            for e,f in zip(im_dat, m_dat):
-                plt.imshow(e)
-                plt.show()
-                plt.imshow(f)
-                plt.show()
+
+            #For now, we're just training the autoencoder
+            #encode 
+            im_enc = model.encode(im_dat)
+            #decode
+            im_pred = model.decode(im_enc)
+            
+            #compute loss
+            with tf.GradientTape() as t:
+                #ae loss 
+                l_1 = ae_loss(im_dat, im_pred, m_dat)
+
+            enc_grads = t.gradient(l_1, e_vars)
+            dec_grads = t.gradient(l_1, d_vars)
+
+            #apply encoder grads 
+            opt.apply_gradients(zip(enc_grads, e_vars))
+            #applt decoder grads
+            opt.apply_gradients(zip(dec_grads, d_vars))
+
+            bar.next()
+
+        bar.finish()
+
+        #losses.append(l_1)
+        print(l_1)
+
 
 train()
         

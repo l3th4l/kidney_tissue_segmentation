@@ -1,11 +1,12 @@
 import numpy as np 
-from skimage import util 
 
-def gen_dat(img, size = [512, 512], overlaps = 3, limit = 100):
+def gen_dat(img, size = [512, 512], batch_size = 100, offsets = None):
 
-    depth = img.shape[-1]
+    max_offset = img.shape[:-1] - np.array(size) - 1
     
-    step = int(min(img.shape[0] / size[0], img.shape[1] / size[1]) / overlaps)
-    wins = util.view_as_windows(img, [size[0], size[1], depth], step = step)
+    if offsets is None:
+        offsets = np.random.randint(max_offset, size = [batch_size, 2])
 
-    return np.reshape(wins, [wins.shape[0] * wins.shape[1], wins.shape[3], wins.shape[4], wins.shape[5]])#[:limit]
+    sample = np.array([img[of[0] : of[0] + size[0], of[1] : of[1] + size[1], :] for of in offsets])
+
+    return sample, offsets

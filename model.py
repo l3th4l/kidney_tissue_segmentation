@@ -11,35 +11,35 @@ class MAE(Model):
 
         #Encoder 
         #512    -> 256 
-        self.e1 = Conv2D(filters[0], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.e1 = Conv2D(filters[0], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e1')
         #256    -> 128 
-        self.e2 = Conv2D(filters[1], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.e2 = Conv2D(filters[1], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e2')
         #128    -> 64 
-        self.e3 = Conv2D(filters[2], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.e3 = Conv2D(filters[2], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e3')
         #64     -> 32 
-        self.e4 = Conv2D(filters[3], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.e4 = Conv2D(filters[3], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e4')
         #32     -> 16
-        self.e5 = Conv2D(filters[4], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.e5 = Conv2D(filters[4], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e5')
 
         #Decoder
         #16     -> 32
-        self.d1 = Conv2DTranspose(filters[3], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.d1 = Conv2DTranspose(filters[3], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd1')
         #32     -> 64
-        self.d2 = Conv2DTranspose(filters[2], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.d2 = Conv2DTranspose(filters[2], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd2')
         #64     -> 128
-        self.d3 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.d3 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd3')
         #128    -> 256
-        self.d4 = Conv2DTranspose(filters[0], kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.d4 = Conv2DTranspose(filters[0], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd4')
         #256    -> 512
-        self.d5 = Conv2DTranspose(3, kernel_size = [3, 3], padding = 'same', strides = [2, 2])
+        self.d5 = Conv2DTranspose(3, kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd5')
 
         #Mask Estimator
         #16     -> 64
-        self.m1 = Conv2DTranspose(filters[3], kernel_size = [3, 3], padding = 'same', strides = [4, 4])
+        self.m1 = Conv2DTranspose(filters[3], kernel_size = [3, 3], padding = 'same', strides = [4, 4], name = 'm1')
         #64     -> 256
-        self.m2 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [4, 4])
+        self.m2 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [4, 4], name = 'm2')
         #256    -> 512
-        self.m3 = Conv2DTranspose(1, kernel_size = [3, 3], padding = 'same', strides = [4, 4])
+        self.m3 = Conv2DTranspose(1, kernel_size = [3, 3], padding = 'same', strides = [4, 4], name = 'm3')
         #sigmoid
         self.mo = sigmoid()
 
