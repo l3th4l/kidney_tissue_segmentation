@@ -41,7 +41,7 @@ class MAE(Model):
         #256    -> 512
         self.m3 = Conv2DTranspose(1, kernel_size = [3, 3], padding = 'same', strides = [4, 4], name = 'm3')
         #sigmoid
-        self.mo = sigmoid()
+        self.mo = sigmoid
 
     def encode(self, inputs):
 
@@ -80,6 +80,8 @@ class MAE(Model):
         return self.decode(x) 
 
 def ae_loss(x, x_pred, mask):
+
+    mask = (mask > 0).astype('int') * 0.9
 
     return tf.math.reduce_mean(tf.math.square(tf.math.multiply((x - x_pred), mask)))
 

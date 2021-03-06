@@ -9,4 +9,4 @@ def gen_dat(img, size = [512, 512], batch_size = 100, offsets = None):
 
     sample = np.array([img[of[0] : of[0] + size[0], of[1] : of[1] + size[1], :] for of in offsets])
 
-    return sample, offsets
+    return sample / np.max(sample), offsets

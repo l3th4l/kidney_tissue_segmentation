@@ -75,18 +75,20 @@ f_pairs = list(zip(files[::2], files[1::2]))
 
 model = MAE()
 
-t_vars = model.trainable_variables
-e_vars = [var for var in t_vars if 'e' in var.name]
-d_vars = [var for var in t_vars if 'd' in var.name]
-m_vars = [var for var in t_vars if 'm' in var.name]
 
 def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _data_path = data_path):
 
     losses = []
+    
+    t_vars = None
+    print(t_vars)
+
 
     for i in range(_epochs):
 
-        bar = Bar('Epoch %i'%(i), max = len(_f_pairs))
+        print("Epoch %i"%(i))
+        
+        e_losss = []
 
         for im_f, m_f in _f_pairs:
 
@@ -108,32 +110,43 @@ def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _da
 
             del im
             del m 
-
-            #For now, we're just training the autoencoder
-            #encode 
-            im_enc = model.encode(im_dat)
-            #decode
-            im_pred = model.decode(im_enc)
             
             #compute loss
-            with tf.GradientTape() as t:
+            with tf.GradientTape(persistent = True) as t:
+                #For now, we're just training the autoencoder
+                #encode 
+                im_enc = model.encode(im_dat)
+                #decode
+                im_pred = model.decode(im_enc)
+
+                if t_vars == None:                
+                    t_vars = model.trainable_variables
+                    e_vars = [var for var in t_vars if 'e' in var.name]
+                    d_vars = [var for var in t_vars if 'd' in var.name]
+                    m_vars = [var for var in t_vars if 'm' in var.name]
+
                 #ae loss 
                 l_1 = ae_loss(im_dat, im_pred, m_dat)
 
+
             enc_grads = t.gradient(l_1, e_vars)
             dec_grads = t.gradient(l_1, d_vars)
+            
+            print(np.sum(np.array([np.sum(grad.numpy()) for grad in enc_grads])))
+            print(np.sum(np.array([np.sum(grad.numpy()) for grad in dec_grads])))
 
             #apply encoder grads 
             opt.apply_gradients(zip(enc_grads, e_vars))
             #applt decoder grads
             opt.apply_gradients(zip(dec_grads, d_vars))
-
-            bar.next()
-
-        bar.finish()
+            
+            print(l_1.numpy())
+            e_losss.append(l_1)
 
         #losses.append(l_1)
-        print(l_1)
+        losses.append(np.sum(e_losss))
+
+    print(losses)
 
 
 train()
