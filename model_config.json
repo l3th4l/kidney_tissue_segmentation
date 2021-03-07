@@ -1,0 +1,107 @@
+{
+    "encoder" : 
+    [
+        {
+            "filters" : 4,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 6,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 8,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 12,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 6,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 4,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        }
+    ],
+    "decoder" : 
+    [
+        {
+            "filters" : 12,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 8,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 6,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 4,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 4,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 3,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        }
+    ],
+    "mask" :
+    [
+        {
+            "filters" : 12,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [2, 2]
+        },
+        {
+            "filters" : 8,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [4, 4]
+        },
+        {
+            "filters" : 6,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [4, 4]
+        },
+        {
+            "filters" : 1,
+            "kernel_size" : [3, 3],
+            "padding" : "same",
+            "strides" : [4, 4]
+        }
+    ]
+}

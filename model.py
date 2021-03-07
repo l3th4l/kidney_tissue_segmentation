@@ -3,87 +3,75 @@ from tensorflow.keras.layers import Conv2D, Conv2DTranspose
 from tensorflow.keras.activations import sigmoid
 from tensorflow.keras.losses import binary_crossentropy
 from tensorflow.keras import Model 
+import numpy as np
+import json
+
+with open('model_config.json', 'rb') as f:
+    m_config = json.load(f) 
 
 class MAE(Model):
 
-    def __init__(self, filters = [8, 8, 16, 16, 32]):
+    def __init__(self):
         super(MAE, self).__init__()
 
         #Encoder 
-        #512    -> 256 
-        self.e1 = Conv2D(filters[0], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e1')
-        #256    -> 128 
-        self.e2 = Conv2D(filters[1], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e2')
-        #128    -> 64 
-        self.e3 = Conv2D(filters[2], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e3')
-        #64     -> 32 
-        self.e4 = Conv2D(filters[3], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e4')
-        #32     -> 16
-        self.e5 = Conv2D(filters[4], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'e5')
-
+        self.encoder = []
+        for i, layer in enumerate(m_config['encoder']):
+            self.encoder.append(Conv2D(layer['filters'], layer['kernel_size'], padding = layer['padding'], strides = layer['strides'], name = 'e%i'%(i + 1)))
+            
         #Decoder
-        #16     -> 32
-        self.d1 = Conv2DTranspose(filters[3], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd1')
-        #32     -> 64
-        self.d2 = Conv2DTranspose(filters[2], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd2')
-        #64     -> 128
-        self.d3 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd3')
-        #128    -> 256
-        self.d4 = Conv2DTranspose(filters[0], kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd4')
-        #256    -> 512
-        self.d5 = Conv2DTranspose(3, kernel_size = [3, 3], padding = 'same', strides = [2, 2], name = 'd5')
-
+        self.decoder = []
+        for i, layer in enumerate(m_config['decoder']):
+            self.decoder.append(Conv2DTranspose(layer['filters'], layer['kernel_size'], padding = layer['padding'], strides = layer['strides'], name = 'd%i'%(i + 1)))
+        
         #Mask Estimator
-        #16     -> 64
-        self.m1 = Conv2DTranspose(filters[3], kernel_size = [3, 3], padding = 'same', strides = [4, 4], name = 'm1')
-        #64     -> 256
-        self.m2 = Conv2DTranspose(filters[1], kernel_size = [3, 3], padding = 'same', strides = [4, 4], name = 'm2')
-        #256    -> 512
-        self.m3 = Conv2DTranspose(1, kernel_size = [3, 3], padding = 'same', strides = [4, 4], name = 'm3')
+        self.masknet = []
+        for i, layer in enumerate(m_config['mask']):
+            self.masknet.append(Conv2DTranspose(layer['filters'], layer['kernel_size'], padding = layer['padding'], strides = layer['strides'], name = 'm%i'%(i + 1)))
+        
         #sigmoid
         self.mo = sigmoid
 
     def encode(self, inputs):
 
         #encode 
-        x = self.e1(inputs)
-        x = self.e2(x)
-        x = self.e3(x)
-        x = self.e4(x)
-        return self.e5(x)
+        x = self.encoder[0](inputs)
+        for layer in self.encoder[1:]:
+            x = layer(x)
+        return x
     
     def decode(self, inputs):
 
         #decode
-        x = self.d1(inputs)
-        x = self.d2(x)
-        x = self.d3(x)
-        x = self.d4(x)
-        return self.d5(x)
+        x = self.decoder[0](inputs)
+        for layer in self.decoder[1:]:
+            x = layer(x)
+        return x
     
     def pred_mask(self, inputs, training = False):
 
         #predict mask
-        x = self.m1(inputs)
-        x = self.m2(x)
-        x = self.m3(x)
+        x = self.masknet[0](inputs)
+        for layer in self.masknet[1:]:
+            x = layer(x)
+
         if training:
             return x, self.mo(x)
         return self.mo(x)
 
-    def call(self, inputs, mask = True):
+    def call(self, inputs, mask = True, training = False):
 
         x = self.encode(inputs)
         
         if mask:
-            return self.pred_mask(x)            
+            return self.pred_mask(x, training = training)            
         return self.decode(x) 
 
 def ae_loss(x, x_pred, mask):
 
     mask = (mask > 0).astype('int') * 0.9
 
-    return tf.math.reduce_mean(tf.math.square(tf.math.multiply((x - x_pred), mask)))
+    return tf.math.reduce_mean(tf.math.square(tf.math.multiply((np.multiply(x, mask) - tf.math.multiply(x_pred, mask)), mask)))
 
 def mask_loss(mask, mask_pred_logits):
 

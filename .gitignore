@@ -16,5 +16,8 @@ venv.bak/
 hubmap-kidney-segmentation/
 processed_dat/
 
+#weights
+.weights/
+
 #images
 *.png

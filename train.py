@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 
 import argparse
 import pickle
+import json
 import os 
 
 parser = argparse.ArgumentParser()
@@ -26,6 +27,11 @@ l_rate = 0.02
 epochs = 100
 batch_size = 100
 data_path = "./processed_dat/"
+
+weight_path = "./.weights/"
+
+if not os.path.exists(weight_path):
+    os.mkdir(weight_path)
 
 if args.l_rate:
 
@@ -144,6 +150,8 @@ def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _da
             e_losss.append(l_1)
 
         #losses.append(l_1)
+
+        model.save_weights(weight_path + "ep_%i"%(i))
         losses.append(np.sum(e_losss))
 
     print(losses)
