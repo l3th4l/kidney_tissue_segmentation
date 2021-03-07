@@ -82,7 +82,7 @@ f_pairs = list(zip(files[::2], files[1::2]))
 model = MAE()
 
 
-def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _data_path = data_path):
+def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _data_path = data_path, m_weightage = 0.8):
 
     losses = []
     
@@ -124,6 +124,8 @@ def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _da
                 im_enc = model.encode(im_dat)
                 #decode
                 im_pred = model.decode(im_enc)
+                #mask
+                m_pred_logits, m_pred = model.pred_mask(im_enc, training = True) 
 
                 if t_vars == None:                
                     t_vars = model.trainable_variables
@@ -133,18 +135,25 @@ def train(_l_rate = l_rate, _opt = opt, _epochs = epochs, _f_pairs= f_pairs, _da
 
                 #ae loss 
                 l_1 = ae_loss(im_dat, im_pred, m_dat)
+                l_2 = mask_loss(m_dat, m_pred_logits)
+
+                loss = (1 - m_weightage) * l_1 + m_weightage * l_2
 
 
-            enc_grads = t.gradient(l_1, e_vars)
-            dec_grads = t.gradient(l_1, d_vars)
+            enc_grads = t.gradient(loss, e_vars)
+            dec_grads = t.gradient(loss, d_vars)
+            msk_grads = t.gradient(loss, m_vars)
             
             print(np.sum(np.array([np.sum(grad.numpy()) for grad in enc_grads])))
             print(np.sum(np.array([np.sum(grad.numpy()) for grad in dec_grads])))
+            print(np.sum(np.array([np.sum(grad.numpy()) for grad in msk_grads])))
 
             #apply encoder grads 
             opt.apply_gradients(zip(enc_grads, e_vars))
             #applt decoder grads
             opt.apply_gradients(zip(dec_grads, d_vars))
+            #applt masknet grads
+            opt.apply_gradients(zip(msk_grads, m_vars))
             
             print(l_1.numpy())
             e_losss.append(l_1)
