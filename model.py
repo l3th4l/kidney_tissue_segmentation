@@ -75,4 +75,6 @@ def ae_loss(x, x_pred, mask):
 
 def mask_loss(mask, mask_pred_logits):
 
+    mask = (mask > 0).astype('int') * 0.9
+
     return tf.math.reduce_mean(binary_crossentropy(mask, mask_pred_logits))
